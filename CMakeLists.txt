@@ -1,19 +1,31 @@
 cmake_minimum_required(VERSION 3.18)
-project(cuda-flash-attention LANGUAGES CXX CUDA)
+project(FlashAttention LANGUAGES CXX CUDA)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CUDA_STANDARD 17)
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CUDA_STANDARD 14)
 
-# Add include directory
-target_include_directories(cuda-flash-attention PUBLIC include)
+# Find CUDA
+find_package(CUDA REQUIRED)
 
-add_executable(
-    cuda-flash-attention
+# Set CUDA architectures
+set(CMAKE_CUDA_ARCHITECTURES 75 80 86)
+
+# Include directories
+include_directories(${CMAKE_SOURCE_DIR}/include)
+
+# Compiler flags
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -O3 -lineinfo")
+
+# Main executable
+add_executable(flash_attention
     src/main.cu
     src/flash_attention.cu
-    src/utils.cu
 )
 
-# Find CUDA and link to it
-find_package(CUDA REQUIRED)
-target_link_libraries(cuda-flash-attention PRIVATE CUDA::cudart) 
+# Link CUDA libraries
+target_link_libraries(flash_attention ${CUDA_LIBRARIES})
+
+# Set properties
+set_target_properties(flash_attention PROPERTIES
+    CUDA_SEPARABLE_COMPILATION ON
+)
